@@ -1,0 +1,8 @@
+{
+  "name": "football-manager",
+  "version": "1.0.0",
+  "description": "Football player management web app (FPL-style data), zero dependencies",
+  "type": "module",
+  "scripts": { "start": "node --disable-warning=ExperimentalWarning server.js", "sync": "node --disable-warning=ExperimentalWarning server.js --sync" },
+  "engines": { "node": ">=22.5" }
+}
