@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ngày gia đình đi chơi</title>
+<meta name="description" content="Gợi ý địa điểm đi chơi cho cả gia đình: công viên, bảo tàng, khu vui chơi, thiên nhiên.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>🧺 Ngày gia đình đi chơi</h1>
+  <p>Chọn nơi phù hợp với cả nhà, hoặc để chúng tôi chọn giúp bạn.</p>
+  <button id="btn-random" class="primary big">🎲 Hôm nay đi đâu?</button>
+</header>
+
+<main>
+  <section class="filters">
+    <input id="f-q" type="search" placeholder="Tìm địa điểm, khu vực…">
+    <select id="f-city"><option value="">Mọi thành phố</option></select>
+    <select id="f-cat"><option value="">Mọi loại hình</option></select>
+    <select id="f-setting"><option value="">Trong nhà / Ngoài trời</option><option>Trong nhà</option><option>Ngoài trời</option></select>
+    <select id="f-age"><option value="">Mọi độ tuổi</option><option value="toddler">Bé nhỏ (0–5)</option><option value="kids">Trẻ em (6–12)</option><option value="teen">Thiếu niên</option><option value="senior">Ông bà</option></select>
+    <select id="f-budget"><option value="">Mọi ngân sách</option><option value="1">₫ Tiết kiệm</option><option value="2">₫₫ Vừa phải</option><option value="3">₫₫₫ Thoải mái</option></select>
+    <label class="check"><input type="checkbox" id="f-fav"> Chỉ yêu thích ♥</label>
+  </section>
+  <div id="count" class="muted"></div>
+  <section id="grid" class="grid"></section>
+  <p class="muted note">Thông tin chỉ mang tính gợi ý. Hãy kiểm tra giờ mở cửa, giá vé và thời tiết trước khi đi.</p>
+</main>
+
+<dialog id="dlg"><div id="dlgbody"></div></dialog>
+<script src="app.js"></script>
+</body>
+</html>

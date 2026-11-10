@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: football-manager
-    runtime: docker
-    plan: free
-    healthCheckPath: /api/meta
-    envVars:
-      - key: ADMIN_TOKEN
-        generateValue: true

@@ -1,13 +1,21 @@
-# Football Manager
+# Ngày gia đình đi chơi
 
-Chạy local: `npm start` → http://localhost:3000 (cần Node ≥ 22.5). Không đặt `ADMIN_TOKEN` thì mọi người đều là admin.
+Web tĩnh gợi ý địa điểm đi chơi cho gia đình, chạy bằng GitHub Pages. Không cần server hay cài đặt.
 
-## Deploy miễn phí (Render)
-1. Đẩy thư mục này lên một repo GitHub.
-2. render.com → New → Blueprint → chọn repo (đọc `render.yaml`) → Apply.
-3. Vào service → Environment, xem giá trị `ADMIN_TOKEN` (tự sinh). Đây là mã đăng nhập admin (nút "Admin" trên web).
-4. Mở URL `https://<tên>.onrender.com`.
+## Thêm địa điểm
+Sửa `data/places.json`, thêm một đối tượng mới:
 
-Lưu ý bản free: máy ngủ sau ~15 phút không có truy cập (lần mở đầu chậm ~50 giây) và ổ đĩa không bền vững →
-mỗi lần khởi động lại, dữ liệu FPL tự đồng bộ lại, nhưng cầu thủ nhập tay/import sẽ mất.
-Đội hình của người dùng lưu trong trình duyệt nên không bị ảnh hưởng.
+```json
+{"id":"ten-khong-dau","name":"Tên địa điểm","city":"Hà Nội","area":"Quận","category":"Công viên",
+ "setting":"Ngoài trời","ages":["toddler","kids","teen","senior"],"budget":1,
+ "duration":"Nửa ngày","desc":"Mô tả ngắn","tip":"Mẹo nhỏ"}
+```
+- `setting`: `Trong nhà` hoặc `Ngoài trời`; `budget`: 1 (tiết kiệm) đến 3 (thoải mái).
+- `ages`: `toddler`, `kids`, `teen`, `senior`.
+
+## Chạy thử trên máy
+`python3 -m http.server 8000` rồi mở http://localhost:8000
+
+## Bật GitHub Pages
+Repo → Settings → Pages → Source: `Deploy from a branch`, Branch: `main` / `(root)` → Save.
+Link: `https://<tên-github>.github.io/<tên-repo>/`
