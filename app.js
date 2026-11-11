@@ -130,9 +130,9 @@ $('#f-q').oninput = renderPlaces;
 
 /* ---------- boot ---------- */
 const get = u => fetch(u).then(r => r.json());
-get('data/challenges.json').then(d => { challenges = d; renderToday(); });
-get('data/questions.json').then(d => { questions = d; renderQcats(); });
-get('data/places.json').then(d => {
+get('data/challenges.json?v=2').then(d => { challenges = d; renderToday(); });
+get('data/questions.json?v=2').then(d => { questions = d; renderQcats(); });
+get('data/places.json?v=2').then(d => {
   places = d;
   const opts = (sel, vals) => vals.forEach(v => $(sel).insertAdjacentHTML('beforeend', `<option>${esc(v)}</option>`));
   opts('#f-city', [...new Set(d.map(p => p.city))]); opts('#f-cat', [...new Set(d.map(p => p.category))]);
