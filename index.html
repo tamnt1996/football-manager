@@ -3,24 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Đoán Từ</title>
-<meta name="description" content="Đoán Từ: mỗi ngày một từ tiếng Việt bí ẩn, bạn có 6 lượt đoán. Miễn phí, không cần tài khoản.">
-<meta name="theme-color" content="#ff7a45">
-<link rel="stylesheet" href="style.css?v=3">
+<title>Hồ Tây Online</title>
+<meta name="description" content="Dạo Hồ Tây trực tuyến: tạo nhân vật, gặp bạn bè, trò chuyện và rủ nhau chơi Đoán Từ.">
+<link rel="stylesheet" href="world.css?v=1">
 </head>
 <body>
-<header>
-  <h1>🔤 Đoán Từ</h1>
-  <div class="hbtns"><button id="b-help" aria-label="Cách chơi">❓</button><button id="b-stats" aria-label="Thống kê">📊</button></div>
-</header>
-<main>
-  <div class="mode"><button id="m-daily" class="on">Hôm nay</button><button id="m-free">Chơi tự do</button></div>
-  <p id="hint" class="hint"></p>
-  <div id="board" class="board"></div>
-  <div id="msg" class="msg"></div>
-  <div id="kb" class="kb"></div>
-</main>
-<dialog id="dlg"><div id="dlgbody"></div></dialog>
-<script src="app.js?v=3"></script>
+<canvas id="cv"></canvas>
+
+<div id="login" class="overlay">
+  <div class="panel">
+    <h1>🌅 Hồ Tây Online</h1>
+    <p class="muted">Tạo nhân vật, dạo quanh hồ, gặp người khác và rủ nhau chơi Đoán Từ.</p>
+    <label>Tên của bạn<input id="l-name" maxlength="16" placeholder="Ví dụ: Lan Anh" autocomplete="off"></label>
+    <div class="row"><canvas id="preview" width="96" height="110"></canvas>
+      <div>
+        <div class="muted small">Màu áo</div><div id="l-colors" class="swatches"></div>
+        <div class="muted small">Phụ kiện</div><div id="l-hats" class="swatches"></div>
+      </div></div>
+    <button id="l-go" class="primary">Vào Hồ Tây</button>
+    <div id="l-err" class="err"></div>
+    <a class="muted small" href="doantu.html">Hoặc chơi Đoán Từ một mình →</a>
+  </div>
+</div>
+
+<div id="hud" hidden>
+  <div id="online" class="box"><b>Đang online <span id="n-online">0</span></b><div id="plist"></div></div>
+  <div id="chatlog"></div>
+  <form id="chatform"><input id="chat" maxlength="120" placeholder="Nhắn gì đó… (Enter để gửi)" autocomplete="off"><button class="primary">Gửi</button></form>
+  <div id="emotes"><button>👋</button><button>😂</button><button>❤️</button><button>👍</button><button>🎉</button></div>
+  <div id="conn" class="box small"></div>
+  <div id="menu"><a href="doantu.html" class="btn">🔤 Đoán Từ hằng ngày</a></div>
+</div>
+
+<div id="card" class="box" hidden></div>
+<div id="invite" class="box" hidden></div>
+<div id="toast"></div>
+
+<div id="duel" class="overlay" hidden>
+  <div class="panel wide">
+    <div class="duelhead"><b id="d-title">Đoán Từ đối kháng</b><button id="d-leave">Rời ván</button></div>
+    <p id="d-hint" class="muted"></p>
+    <div class="boards"><div><div class="muted small" id="d-me">Bạn</div><div id="d-board" class="board"></div></div>
+      <div><div class="muted small" id="d-opp">Đối thủ</div><div id="d-oppboard" class="board small"></div></div></div>
+    <div id="d-msg" class="msg"></div>
+    <div id="d-kb" class="kb"></div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script type="module" src="world.js?v=1"></script>
 </body>
 </html>
