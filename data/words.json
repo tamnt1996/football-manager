@@ -1,0 +1,427 @@
+[
+{
+"w": "gia đình",
+"k": "giadinh",
+"h": "nơi có bố mẹ và các con"
+},
+{
+"w": "bánh mì",
+"k": "banhmi",
+"h": "món ăn sáng nổi tiếng, kẹp nhân trong ổ bánh"
+},
+{
+"w": "phở bò",
+"k": "phobo",
+"h": "món nước truyền thống ăn với bánh phở"
+},
+{
+"w": "cà phê",
+"k": "caphe",
+"h": "thức uống buổi sáng làm từ hạt rang"
+},
+{
+"w": "xe máy",
+"k": "xemay",
+"h": "phương tiện phổ biến trên đường phố"
+},
+{
+"w": "hoa sen",
+"k": "hoasen",
+"h": "loài hoa mọc ở đầm, biểu tượng của Việt Nam"
+},
+{
+"w": "con trâu",
+"k": "contrau",
+"h": "người bạn của nhà nông trên đồng ruộng"
+},
+{
+"w": "mặt trời",
+"k": "mattroi",
+"h": "chiếu sáng cho ban ngày"
+},
+{
+"w": "mặt trăng",
+"k": "mattrang",
+"h": "xuất hiện trên bầu trời ban đêm"
+},
+{
+"w": "bầu trời",
+"k": "bautroi",
+"h": "nơi có mây, nắng và chim bay"
+},
+{
+"w": "dòng sông",
+"k": "dongsong",
+"h": "nước chảy ra biển"
+},
+{
+"w": "cánh đồng",
+"k": "canhdong",
+"h": "nơi trồng lúa"
+},
+{
+"w": "sách vở",
+"k": "sachvo",
+"h": "dụng cụ học tập của học sinh"
+},
+{
+"w": "bút chì",
+"k": "butchi",
+"h": "dùng để viết và vẽ, có thể tẩy được"
+},
+{
+"w": "máy tính",
+"k": "maytinh",
+"h": "thiết bị dùng để làm việc và học"
+},
+{
+"w": "tủ lạnh",
+"k": "tulanh",
+"h": "giữ thức ăn luôn tươi mát"
+},
+{
+"w": "quạt máy",
+"k": "quatmay",
+"h": "giúp mát hơn khi trời nóng"
+},
+{
+"w": "nhà bếp",
+"k": "nhabep",
+"h": "nơi nấu những bữa cơm"
+},
+{
+"w": "bữa cơm",
+"k": "buacom",
+"h": "lúc cả nhà quây quần"
+},
+{
+"w": "ông bà",
+"k": "ongba",
+"h": "những người lớn tuổi trong gia đình"
+},
+{
+"w": "anh em",
+"k": "anhem",
+"h": "con của cùng một bố mẹ"
+},
+{
+"w": "bạn bè",
+"k": "banbe",
+"h": "những người thân thiết ngoài gia đình"
+},
+{
+"w": "thầy cô",
+"k": "thayco",
+"h": "người dạy học cho chúng ta"
+},
+{
+"w": "bác sĩ",
+"k": "bacsi",
+"h": "người khám và chữa bệnh"
+},
+{
+"w": "công viên",
+"k": "congvien",
+"h": "nơi vui chơi và đi dạo ngoài trời"
+},
+{
+"w": "bãi biển",
+"k": "baibien",
+"h": "nơi có cát và sóng"
+},
+{
+"w": "núi rừng",
+"k": "nuirung",
+"h": "nơi có nhiều cây cối và thú rừng"
+},
+{
+"w": "mùa xuân",
+"k": "muaxuan",
+"h": "mùa Tết đến"
+},
+{
+"w": "mùa hè",
+"k": "muahe",
+"h": "mùa nóng, các bạn nhỏ được nghỉ học"
+},
+{
+"w": "mùa thu",
+"k": "muathu",
+"h": "mùa lá vàng rơi, có Trung Thu"
+},
+{
+"w": "mùa đông",
+"k": "muadong",
+"h": "mùa lạnh phải mặc áo ấm"
+},
+{
+"w": "trung thu",
+"k": "trungthu",
+"h": "tết của thiếu nhi, có đèn lồng"
+},
+{
+"w": "đèn lồng",
+"k": "denlong",
+"h": "thứ các bạn nhỏ rước dịp Trung Thu"
+},
+{
+"w": "áo dài",
+"k": "aodai",
+"h": "trang phục truyền thống của Việt Nam"
+},
+{
+"w": "nón lá",
+"k": "nonla",
+"h": "vật che nắng làm từ lá cọ"
+},
+{
+"w": "cầu vồng",
+"k": "cauvong",
+"h": "hiện ra nhiều màu sau cơn mưa"
+},
+{
+"w": "ngôi sao",
+"k": "ngoisao",
+"h": "lấp lánh trên bầu trời đêm"
+},
+{
+"w": "con mèo",
+"k": "conmeo",
+"h": "thú cưng hay kêu meo meo"
+},
+{
+"w": "con chó",
+"k": "concho",
+"h": "thú cưng trung thành, hay sủa gâu gâu"
+},
+{
+"w": "hạnh phúc",
+"k": "hanhphuc",
+"h": "cảm giác vui vẻ và đủ đầy"
+},
+{
+"w": "vui vẻ",
+"k": "vuive",
+"h": "tâm trạng cười tươi, thoải mái"
+},
+{
+"w": "chăm chỉ",
+"k": "chamchi",
+"h": "siêng năng làm việc, học tập"
+},
+{
+"w": "dũng cảm",
+"k": "dungcam",
+"h": "không sợ khó khăn, nguy hiểm"
+},
+{
+"w": "biết ơn",
+"k": "bieton",
+"h": "nhớ và cảm ơn người giúp mình"
+},
+{
+"w": "kiên trì",
+"k": "kientri",
+"h": "không bỏ cuộc giữa chừng"
+},
+{
+"w": "xe đạp",
+"k": "xedap",
+"h": "phương tiện đi bằng sức người, hai bánh"
+},
+{
+"w": "tàu hỏa",
+"k": "tauhoa",
+"h": "chạy trên đường ray"
+},
+{
+"w": "máy bay",
+"k": "maybay",
+"h": "bay trên bầu trời chở hành khách"
+},
+{
+"w": "bóng đá",
+"k": "bongda",
+"h": "môn thể thao có hai khung thành"
+},
+{
+"w": "cầu lông",
+"k": "caulong",
+"h": "môn thể thao đánh quả cầu qua lưới"
+},
+{
+"w": "bơi lội",
+"k": "boiloi",
+"h": "môn thể thao dưới nước"
+},
+{
+"w": "chạy bộ",
+"k": "chaybo",
+"h": "vận động bằng cách chạy chậm mỗi sáng"
+},
+{
+"w": "âm nhạc",
+"k": "amnhac",
+"h": "giai điệu và lời ca"
+},
+{
+"w": "bài hát",
+"k": "baihat",
+"h": "giai điệu có lời để hát"
+},
+{
+"w": "cơm tấm",
+"k": "comtam",
+"h": "món ăn đặc trưng của Sài Gòn"
+},
+{
+"w": "bún chả",
+"k": "buncha",
+"h": "món ăn nổi tiếng của Hà Nội"
+},
+{
+"w": "chả giò",
+"k": "chagio",
+"h": "món cuốn chiên giòn"
+},
+{
+"w": "trà sữa",
+"k": "trasua",
+"h": "thức uống ngọt có thêm trân châu"
+},
+{
+"w": "kem que",
+"k": "kemque",
+"h": "món lạnh ăn ngày hè"
+},
+{
+"w": "nước mía",
+"k": "nuocmia",
+"h": "thức uống ép từ cây ngọt"
+},
+{
+"w": "dưa hấu",
+"k": "duahau",
+"h": "quả vỏ xanh ruột đỏ mọng nước"
+},
+{
+"w": "hà nội",
+"k": "hanoi",
+"h": "thủ đô của Việt Nam"
+},
+{
+"w": "sài gòn",
+"k": "saigon",
+"h": "tên quen thuộc của thành phố lớn phía Nam"
+},
+{
+"w": "đà nẵng",
+"k": "danang",
+"h": "thành phố có cầu Rồng và biển Mỹ Khê"
+},
+{
+"w": "hạ long",
+"k": "halong",
+"h": "vịnh có hàng nghìn đảo đá"
+},
+{
+"w": "hoa hồng",
+"k": "hoahong",
+"h": "loài hoa có gai, tượng trưng cho tình yêu"
+},
+{
+"w": "con cá",
+"k": "conca",
+"h": "sống dưới nước, biết bơi"
+},
+{
+"w": "cây xanh",
+"k": "cayxanh",
+"h": "giúp không khí trong lành"
+},
+{
+"w": "nhà cửa",
+"k": "nhacua",
+"h": "nơi chúng ta sinh sống"
+},
+{
+"w": "đồ chơi",
+"k": "dochoi",
+"h": "thứ các bạn nhỏ thích nhất"
+},
+{
+"w": "sinh nhật",
+"k": "sinhnhat",
+"h": "ngày chúng ta chào đời, có bánh và nến"
+},
+{
+"w": "quà tặng",
+"k": "quatang",
+"h": "thứ ta trao cho người khác để thể hiện tình cảm"
+},
+{
+"w": "nụ cười",
+"k": "nucuoi",
+"h": "biểu cảm làm cho người khác vui"
+},
+{
+"w": "giấc mơ",
+"k": "giacmo",
+"h": "điều ta thấy khi ngủ"
+},
+{
+"w": "ước mơ",
+"k": "uocmo",
+"h": "điều ta mong muốn đạt được"
+},
+{
+"w": "bình minh",
+"k": "binhminh",
+"h": "lúc mặt trời mọc"
+},
+{
+"w": "hoàng hôn",
+"k": "hoanghon",
+"h": "lúc mặt trời lặn"
+},
+{
+"w": "con đường",
+"k": "conduong",
+"h": "nơi xe cộ và người đi lại"
+},
+{
+"w": "cái ô",
+"k": "caio",
+"h": "dùng để che mưa nắng"
+},
+{
+"w": "cơn mưa",
+"k": "conmua",
+"h": "nước rơi từ mây xuống"
+},
+{
+"w": "gió mát",
+"k": "giomat",
+"h": "làn gió dễ chịu ngày hè"
+},
+{
+"w": "mẹ hiền",
+"k": "mehien",
+"h": "người sinh ra và chăm sóc ta"
+},
+{
+"w": "cha mẹ",
+"k": "chame",
+"h": "bố và mẹ"
+},
+{
+"w": "trái tim",
+"k": "traitim",
+"h": "cơ quan bơm máu, biểu tượng tình yêu"
+},
+{
+"w": "đôi tay",
+"k": "doitay",
+"h": "dùng để cầm nắm, làm việc"
+}
+]

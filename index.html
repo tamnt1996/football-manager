@@ -2,85 +2,25 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gia đình kết nối</title>
-<meta name="description" content="Mỗi ngày một thử thách nhỏ để cả nhà rời màn hình, gần nhau hơn: thử thách hằng ngày, hẹn giờ không điện thoại, thẻ trò chuyện và gợi ý nơi đi chơi.">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Đoán Từ</title>
+<meta name="description" content="Đoán Từ: mỗi ngày một từ tiếng Việt bí ẩn, bạn có 6 lượt đoán. Miễn phí, không cần tài khoản.">
 <meta name="theme-color" content="#ff7a45">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <header>
-  <h1>🧺 Gia đình kết nối</h1>
-  <p>Mỗi ngày 15 phút bên nhau, không màn hình. Miễn phí, không cần tài khoản.</p>
-  <nav id="tabs">
-    <button data-tab="today" class="active">🎯 Hôm nay</button>
-    <button data-tab="focus">📵 Không điện thoại</button>
-    <button data-tab="talk">💬 Thẻ trò chuyện</button>
-    <button data-tab="places">📍 Đi chơi</button>
-  </nav>
+  <h1>🔤 Đoán Từ</h1>
+  <div class="hbtns"><button id="b-help" aria-label="Cách chơi">❓</button><button id="b-stats" aria-label="Thống kê">📊</button></div>
 </header>
-
 <main>
-  <section id="tab-today">
-    <div class="stats">
-      <div><b id="s-streak">0</b><span>ngày liên tiếp 🔥</span></div>
-      <div><b id="s-total">0</b><span>thử thách đã làm</span></div>
-      <div><b id="s-min">0</b><span>phút không điện thoại</span></div>
-    </div>
-    <div class="hero" id="challenge">
-      <small id="c-date"></small>
-      <span class="tag" id="c-cat"></span>
-      <h2 id="c-text"></h2>
-      <div class="actions">
-        <button class="primary big" id="c-done">✅ Cả nhà đã làm xong</button>
-        <button id="c-share">Chia sẻ</button>
-      </div>
-      <p id="c-msg" class="muted"></p>
-    </div>
-    <h3>7 ngày gần nhất</h3>
-    <div id="week" class="week"></div>
-    <p class="muted note">Dữ liệu chỉ lưu trong trình duyệt của bạn, không gửi đi đâu.</p>
-  </section>
-
-  <section id="tab-focus" hidden>
-    <div class="hero center">
-      <h2>Cất điện thoại, ở bên nhau</h2>
-      <p class="muted">Chọn thời gian, đặt điện thoại úp xuống và cùng làm việc khác. Giữ trang này mở.</p>
-      <div class="chips" id="durs"><button data-m="15" class="on">15 phút</button><button data-m="30">30 phút</button><button data-m="60">60 phút</button></div>
-      <div id="clock" class="clock">15:00</div>
-      <div class="bar"><div id="bar-fill"></div></div>
-      <div class="actions center"><button class="primary big" id="f-start">▶ Bắt đầu</button><button id="f-stop" hidden>Dừng</button></div>
-      <p id="f-msg" class="muted"></p>
-    </div>
-  </section>
-
-  <section id="tab-talk" hidden>
-    <div class="hero center">
-      <div class="chips" id="qcats"></div>
-      <h2 id="q-text" class="bigq">Bấm để rút một câu hỏi</h2>
-      <div class="actions center"><button class="primary big" id="q-next">🎴 Rút thẻ</button><button id="q-share">Chia sẻ</button></div>
-    </div>
-  </section>
-
-  <section id="tab-places" hidden>
-    <div class="filters">
-      <input id="f-q" type="search" placeholder="Tìm địa điểm, khu vực…">
-      <select id="f-city"><option value="">Mọi thành phố</option></select>
-      <select id="f-cat"><option value="">Mọi loại hình</option></select>
-      <select id="f-setting"><option value="">Trong nhà / Ngoài trời</option><option>Trong nhà</option><option>Ngoài trời</option></select>
-      <select id="f-age"><option value="">Mọi độ tuổi</option><option value="toddler">Bé nhỏ (0–5)</option><option value="kids">Trẻ em (6–12)</option><option value="teen">Thiếu niên</option><option value="senior">Ông bà</option></select>
-      <select id="f-budget"><option value="">Mọi ngân sách</option><option value="1">₫ Tiết kiệm</option><option value="2">₫₫ Vừa phải</option><option value="3">₫₫₫ Thoải mái</option></select>
-      <label class="check"><input type="checkbox" id="f-fav"> Chỉ yêu thích ♥</label>
-      <button class="primary" id="btn-random">🎲 Hôm nay đi đâu?</button>
-    </div>
-    <div id="count" class="muted"></div>
-    <div id="grid" class="grid"></div>
-    <p class="muted note">Thông tin chỉ mang tính gợi ý. Hãy kiểm tra giờ mở cửa, giá vé và thời tiết trước khi đi.</p>
-  </section>
+  <div class="mode"><button id="m-daily" class="on">Hôm nay</button><button id="m-free">Chơi tự do</button></div>
+  <p id="hint" class="hint"></p>
+  <div id="board" class="board"></div>
+  <div id="msg" class="msg"></div>
+  <div id="kb" class="kb"></div>
 </main>
-
-<div id="toast"></div>
 <dialog id="dlg"><div id="dlgbody"></div></dialog>
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

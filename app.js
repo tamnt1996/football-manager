@@ -1,140 +1,131 @@
 const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
-const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2400); };
-const key = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
-const hash = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
-async function share(text) {
-  const data = { title: 'Gia đình kết nối', text, url: location.href.split('#')[0] };
-  try { if (navigator.share) return await navigator.share(data); } catch (e) { if (e.name === 'AbortError') return; }
-  try { await navigator.clipboard.writeText(`${text}\n${data.url}`); toast('Đã chép nội dung, hãy dán để gửi'); } catch { toast(text); }
+const MAX = 6, EPOCH = Date.UTC(2026, 10, 1);
+const KEYS = ['qwertyuiop', 'asdfghjkl', '+zxcvbnm-'];
+const dayKey = d => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+const dayNum = () => { const n = new Date(); return Math.floor((Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) - EPOCH) / 864e5) + 1; };
+
+let words = [], g = null; // g = current game {mode, word, guesses, cur, over, won}
+
+function evaluate(guess, answer) {
+  const res = Array(guess.length).fill('no'), left = {};
+  for (let i = 0; i < guess.length; i++) { if (guess[i] === answer[i]) res[i] = 'ok'; else left[answer[i]] = (left[answer[i]] || 0) + 1; }
+  for (let i = 0; i < guess.length; i++) if (res[i] === 'no' && left[guess[i]] > 0) { res[i] = 'mid'; left[guess[i]]--; }
+  return res;
 }
 
-/* ---------- tabs ---------- */
-$('#tabs').onclick = e => {
-  const b = e.target.closest('[data-tab]'); if (!b) return;
-  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('active', x === b));
-  document.querySelectorAll('main > section').forEach(s => s.hidden = s.id !== 'tab-' + b.dataset.tab);
-  history.replaceState(null, '', '#' + b.dataset.tab);
-};
-const startTab = location.hash.slice(1);
-if (startTab && $(`[data-tab="${startTab}"]`)) $(`[data-tab="${startTab}"]`).click();
+function newGame(mode) {
+  let w;
+  if (mode === 'daily') {
+    w = words[((dayNum() * 2654435761) >>> 0) % words.length];
+    const saved = load('daily-' + dayKey(new Date()), null);
+    g = { mode, word: w, guesses: saved?.guesses || [], cur: '', over: false, won: false };
+    g.won = g.guesses.includes(w.k); g.over = g.won || g.guesses.length >= MAX;
+  } else {
+    w = words[Math.floor(Math.random() * words.length)];
+    g = { mode, word: w, guesses: [], cur: '', over: false, won: false };
+  }
+  $('#m-daily').classList.toggle('on', mode === 'daily'); $('#m-free').classList.toggle('on', mode === 'free');
+  $('#hint').textContent = `Gợi ý: ${w.h} (${w.k.length} chữ cái, không dấu)`;
+  buildBoard(); render(); $('#msg').textContent = '';
+  if (g.over) finish(true);
+}
 
-/* ---------- daily challenge ---------- */
-let challenges = [], done = load('done', {});
-const streak = () => { let d = new Date(), n = 0; if (!done[key(d)]) d = addDays(d, -1); while (done[key(d)]) { n++; d = addDays(d, -1); } return n; };
-function todaysChallenge() { return challenges[hash(key(new Date())) % challenges.length]; }
-function renderToday() {
-  if (!challenges.length) return;
-  const c = todaysChallenge(), k = key(new Date());
-  $('#c-date').textContent = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' });
-  $('#c-cat').textContent = c.cat; $('#c-text').textContent = c.text;
-  $('#challenge').classList.toggle('done', !!done[k]);
-  $('#c-done').textContent = done[k] ? '🎉 Đã hoàn thành hôm nay' : '✅ Cả nhà đã làm xong';
-  $('#c-done').disabled = !!done[k];
-  $('#c-msg').textContent = done[k] ? 'Tuyệt vời! Hẹn cả nhà ngày mai.' : '';
-  $('#s-streak').textContent = streak();
-  $('#s-total').textContent = Object.keys(done).length;
-  $('#s-min').textContent = load('minutes', 0);
-  $('#week').innerHTML = Array.from({ length: 7 }, (_, i) => addDays(new Date(), i - 6)).map(d =>
-    `<div class="${done[key(d)] ? 'ok' : ''} ${key(d) === k ? 'today' : ''}">${['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.getDay()]}<br>${done[key(d)] ? '✓' : '·'}</div>`).join('');
+function buildBoard() {
+  const n = g.word.k.length, b = $('#board');
+  b.innerHTML = Array.from({ length: MAX }, () => `<div class="row" style="grid-template-columns:repeat(${n},auto)">${'<div class="tile"></div>'.repeat(n)}</div>`).join('');
 }
-$('#c-done').onclick = () => { done[key(new Date())] = 1; save('done', done); renderToday(); toast(`🔥 Chuỗi ${streak()} ngày!`); };
-$('#c-share').onclick = () => share(`Thử thách gia đình hôm nay: ${todaysChallenge().text}${streak() ? ` (nhà mình đang giữ chuỗi ${streak()} ngày 🔥)` : ''}`);
+function render() {
+  const rows = document.querySelectorAll('.row'), n = g.word.k.length, kstate = {};
+  rows.forEach((row, r) => {
+    const guess = g.guesses[r], typing = r === g.guesses.length && !g.over ? g.cur : '';
+    const res = guess ? evaluate(guess, g.word.k) : null;
+    [...row.children].forEach((t, i) => {
+      t.textContent = guess ? guess[i] : typing[i] || '';
+      t.className = 'tile' + (res ? ' ' + res[i] : typing[i] ? ' fill' : '');
+      if (res) { const L = guess[i], rank = { no: 1, mid: 2, ok: 3 }; if (!kstate[L] || rank[res[i]] > rank[kstate[L]]) kstate[L] = res[i]; }
+    });
+  });
+  document.querySelectorAll('.key[data-k]').forEach(k => { k.classList.remove('ok', 'mid', 'no'); if (kstate[k.dataset.k]) k.classList.add(kstate[k.dataset.k]); });
+}
+function buildKb() {
+  $('#kb').innerHTML = KEYS.map(r => `<div class="krow">${[...r].map(c => c === '+' ? '<button class="key wide" data-k="Enter">Enter</button>' : c === '-' ? '<button class="key wide" data-k="Back">⌫</button>' : `<button class="key" data-k="${c}">${c}</button>`).join('')}</div>`).join('');
+}
+const say = (t, ms = 1800) => { $('#msg').textContent = t; if (ms) setTimeout(() => { if ($('#msg').textContent === t) $('#msg').textContent = ''; }, ms); };
 
-/* ---------- phone-free timer ---------- */
-let minutes = 15, endAt = 0, tick = null;
-const fmt = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-$('#durs').onclick = e => {
-  const b = e.target.closest('[data-m]'); if (!b || tick) return;
-  minutes = +b.dataset.m; $('#clock').textContent = fmt(minutes * 60);
-  document.querySelectorAll('#durs button').forEach(x => x.classList.toggle('on', x === b));
-};
-function stopTimer(completed) {
-  clearInterval(tick); tick = null;
-  $('#f-start').hidden = false; $('#f-stop').hidden = true; $('#bar-fill').style.width = '0';
-  $('#clock').textContent = fmt(minutes * 60);
-  if (completed) { save('minutes', load('minutes', 0) + minutes); $('#f-msg').textContent = `🎉 Hoàn thành ${minutes} phút bên nhau!`; renderToday(); }
-  else $('#f-msg').textContent = '';
+function press(k) {
+  if (!g || g.over || $('#dlg').open) return;
+  const n = g.word.k.length;
+  if (k === 'Back') g.cur = g.cur.slice(0, -1);
+  else if (k === 'Enter') {
+    if (g.cur.length < n) { const row = document.querySelectorAll('.row')[g.guesses.length]; row.classList.remove('shake'); void row.offsetWidth; row.classList.add('shake'); return say(`Cần đủ ${n} chữ cái`); }
+    g.guesses.push(g.cur); g.cur = '';
+    g.won = g.guesses[g.guesses.length - 1] === g.word.k; g.over = g.won || g.guesses.length >= MAX;
+    if (g.mode === 'daily') save('daily-' + dayKey(new Date()), { guesses: g.guesses });
+    render();
+    if (g.over) { if (g.mode === 'daily') recordStats(); setTimeout(() => finish(false), 450); }
+    return;
+  } else if (/^[a-z]$/.test(k) && g.cur.length < n) g.cur += k;
+  render();
 }
-$('#f-start').onclick = () => {
-  endAt = Date.now() + minutes * 60000; $('#f-start').hidden = true; $('#f-stop').hidden = false; $('#f-msg').textContent = 'Đặt điện thoại xuống và cùng làm việc khác nhé.';
-  tick = setInterval(() => {
-    const left = Math.max(0, Math.round((endAt - Date.now()) / 1000));
-    $('#clock').textContent = fmt(left); $('#bar-fill').style.width = (100 - left / (minutes * 60) * 100) + '%';
-    if (left <= 0) stopTimer(true);
-  }, 500);
-};
-$('#f-stop').onclick = () => stopTimer(false);
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Enter') press('Enter'); else if (e.key === 'Backspace') press('Back'); else if (/^[a-zA-Z]$/.test(e.key)) press(e.key.toLowerCase());
+});
+$('#kb').onclick = e => { const b = e.target.closest('[data-k]'); if (b) press(b.dataset.k); };
 
-/* ---------- conversation cards ---------- */
-let questions = {}, qcat = '';
-function renderQcats() {
-  const cats = ['Tất cả', ...Object.keys(questions)];
-  $('#qcats').innerHTML = cats.map(c => `<button data-c="${c === 'Tất cả' ? '' : esc(c)}" class="${(c === 'Tất cả' ? '' : c) === qcat ? 'on' : ''}">${esc(c)}</button>`).join('');
+/* ---- stats ---- */
+function recordStats() {
+  const s = load('stats', { played: 0, wins: 0, streak: 0, best: 0, last: '', dist: [0, 0, 0, 0, 0, 0] });
+  if (s.last === dayKey(new Date())) return;
+  const yest = new Date(); yest.setDate(yest.getDate() - 1);
+  s.played++; s.last = dayKey(new Date());
+  if (g.won) { s.wins++; s.streak = (s.lastWin === dayKey(yest) ? s.streak : 0) + 1; s.best = Math.max(s.best, s.streak); s.dist[g.guesses.length - 1]++; s.lastWin = dayKey(new Date()); }
+  else s.streak = 0;
+  save('stats', s);
 }
-$('#qcats').onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; qcat = b.dataset.c; renderQcats(); nextQ(); };
-function nextQ() {
-  const pool = qcat ? questions[qcat] : Object.values(questions).flat();
-  if (pool.length) $('#q-text').textContent = pool[Math.floor(Math.random() * pool.length)];
+function shareText() {
+  const grid = g.guesses.map(x => evaluate(x, g.word.k).map(r => ({ ok: '🟩', mid: '🟨', no: '⬛' }[r])).join('')).join('\n');
+  return `Đoán Từ #${dayNum()} ${g.won ? g.guesses.length : 'X'}/${MAX}\n${grid}`;
 }
-$('#q-next').onclick = nextQ;
-$('#q-share').onclick = () => { const t = $('#q-text').textContent; if (t.includes('?')) share(`Câu hỏi cho cả nhà: ${t}`); else toast('Hãy rút một thẻ trước'); };
-
-/* ---------- places ---------- */
-const AGES = { toddler: 'Bé nhỏ', kids: 'Trẻ em', teen: 'Thiếu niên', senior: 'Ông bà' };
-const MONEY = n => '₫'.repeat(n);
-let places = [], favs = new Set(load('favs', []));
-const mapUrl = p => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(`${p.name}, ${p.city}`);
-function filtered() {
-  const q = $('#f-q').value.trim().toLowerCase();
-  const f = { city: $('#f-city').value, category: $('#f-cat').value, setting: $('#f-setting').value, age: $('#f-age').value, budget: $('#f-budget').value };
-  return places.filter(p =>
-    (!q || `${p.name} ${p.area} ${p.city} ${p.desc}`.toLowerCase().includes(q)) &&
-    (!f.city || p.city === f.city) && (!f.category || p.category === f.category) &&
-    (!f.setting || p.setting === f.setting) && (!f.age || p.ages.includes(f.age)) &&
-    (!f.budget || p.budget === +f.budget) && (!$('#f-fav').checked || favs.has(p.id)));
+async function share() {
+  const text = shareText(), url = location.href.split('#')[0];
+  try { if (navigator.share) return await navigator.share({ text, url }); } catch (e) { if (e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(`${text}\n${url}`); say('Đã chép kết quả, hãy dán để gửi bạn bè', 2500); } catch { say(text, 4000); }
 }
-function renderPlaces() {
-  const list = filtered();
-  $('#count').textContent = `${list.length} địa điểm`;
-  $('#grid').innerHTML = list.map(p => `
-    <article class="card" data-id="${esc(p.id)}">
-      <button class="fav ${favs.has(p.id) ? 'on' : ''}" data-fav="${esc(p.id)}" aria-label="Yêu thích">${favs.has(p.id) ? '♥' : '♡'}</button>
-      <h3 style="margin:0 34px 0 0">${esc(p.name)}</h3>
-      <div class="loc">📍 ${esc(p.area)}, ${esc(p.city)}</div>
-      <p>${esc(p.desc)}</p>
-      <div class="tags"><span class="tag">${esc(p.category)}</span><span class="tag">${esc(p.setting)}</span><span class="tag">${MONEY(p.budget)}</span><span class="tag">⏱ ${esc(p.duration)}</span></div>
-    </article>`).join('') || '<p class="muted">Chưa có địa điểm phù hợp. Thử bỏ bớt bộ lọc nhé.</p>';
+function statsHtml() {
+  const s = load('stats', { played: 0, wins: 0, streak: 0, best: 0, dist: [0, 0, 0, 0, 0, 0] }), mx = Math.max(1, ...s.dist);
+  return `<div class="statrow"><div><b>${s.played}</b><span>Đã chơi</span></div><div><b>${s.played ? Math.round(s.wins / s.played * 100) : 0}%</b><span>Thắng</span></div><div><b>${s.streak}</b><span>Chuỗi thắng 🔥</span></div><div><b>${s.best}</b><span>Chuỗi dài nhất</span></div></div>
+  ${s.dist.map((n, i) => `<div class="dist">${i + 1}<i class="${g?.won && g.mode === 'daily' && g.guesses.length === i + 1 ? 'hi' : ''}" style="width:${Math.max(8, n / mx * 100)}%">${n}</i></div>`).join('')}`;
 }
-function showPlace(p) {
-  $('#dlgbody').innerHTML = `
-    <h2>${esc(p.name)}</h2><div class="loc">📍 ${esc(p.area)}, ${esc(p.city)}</div><p>${esc(p.desc)}</p>
-    <div class="tags"><span class="tag">${esc(p.category)}</span><span class="tag">${esc(p.setting)}</span><span class="tag">${MONEY(p.budget)}</span><span class="tag">⏱ ${esc(p.duration)}</span>${p.ages.map(a => `<span class="tag">👪 ${AGES[a]}</span>`).join('')}</div>
-    ${p.tip ? `<div class="box">💡 ${esc(p.tip)}</div>` : ''}
-    <div class="actions"><button id="d-close">Đóng</button><button id="d-fav">${favs.has(p.id) ? '♥ Bỏ yêu thích' : '♡ Yêu thích'}</button><a class="btn" target="_blank" rel="noopener" href="${mapUrl(p)}">Xem bản đồ</a></div>`;
-  $('#d-close').onclick = () => $('#dlg').close();
-  $('#d-fav').onclick = () => { toggleFav(p.id); showPlace(p); };
+function countdown() { const n = new Date(), t = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1); const s = Math.floor((t - n) / 1000); return `${Math.floor(s / 3600)} giờ ${Math.floor(s % 3600 / 60)} phút`; }
+function finish(silent) {
+  const d = $('#dlgbody');
+  d.innerHTML = `<h2>${g.won ? '🎉 Chính xác!' : '😅 Hết lượt rồi'}</h2><div class="reveal">${g.word.w}</div><p style="margin:0;text-align:center" class="hint">${g.word.h}</p>
+  ${g.mode === 'daily' ? statsHtml() + `<p class="hint">Từ mới sau ${countdown()} nữa</p>` : ''}
+  <div class="actions">${g.mode === 'daily' ? '<button id="x-share" class="primary">Chia sẻ</button>' : ''}<button id="x-free">Chơi tự do</button><button id="x-close">Đóng</button></div>`;
+  if (g.mode === 'daily') $('#x-share').onclick = share;
+  $('#x-free').onclick = () => { $('#dlg').close(); newGame('free'); };
+  $('#x-close').onclick = () => $('#dlg').close();
   $('#dlg').showModal();
 }
-function toggleFav(id) { favs.has(id) ? favs.delete(id) : favs.add(id); save('favs', [...favs]); renderPlaces(); }
-$('#grid').onclick = e => {
-  const fav = e.target.closest('[data-fav]'); if (fav) return toggleFav(fav.dataset.fav);
-  const card = e.target.closest('.card'); if (card) showPlace(places.find(p => p.id === card.dataset.id));
+$('#b-stats').onclick = () => {
+  $('#dlgbody').innerHTML = `<h2>Thống kê</h2>${statsHtml()}<div class="actions"><button id="x-close">Đóng</button></div>`;
+  $('#x-close').onclick = () => $('#dlg').close(); $('#dlg').showModal();
 };
-$('#btn-random').onclick = () => { const l = filtered(); if (!l.length) return toast('Không có địa điểm nào khớp bộ lọc'); showPlace(l[Math.floor(Math.random() * l.length)]); };
-$('#f-q').oninput = renderPlaces;
-['#f-city', '#f-cat', '#f-setting', '#f-age', '#f-budget', '#f-fav'].forEach(s => $(s).onchange = renderPlaces);
+$('#b-help').onclick = () => {
+  $('#dlgbody').innerHTML = `<h2>Cách chơi</h2><p style="margin:0">Đoán từ tiếng Việt <b>không dấu</b> trong ${MAX} lượt. Có gợi ý ở trên bảng. Gõ đủ số chữ rồi bấm Enter.</p>
+  <div class="legend"><div class="tile ok">a</div> Đúng chữ, đúng vị trí</div>
+  <div class="legend"><div class="tile mid">b</div> Có trong từ nhưng sai vị trí</div>
+  <div class="legend"><div class="tile no">c</div> Không có trong từ</div>
+  <p style="margin:0" class="hint">Ví dụ: "gia đình" nhập là <b>giadinh</b> (bỏ dấu, bỏ khoảng trắng). Mỗi ngày có một từ mới.</p>
+  <div class="actions"><button id="x-close" class="primary">Chơi thôi!</button></div>`;
+  $('#x-close').onclick = () => { $('#dlg').close(); save('seenHelp', 1); }; $('#dlg').showModal();
+};
+$('#m-daily').onclick = () => newGame('daily');
+$('#m-free').onclick = () => newGame('free');
 
-/* ---------- boot ---------- */
-const get = u => fetch(u).then(r => r.json());
-get('data/challenges.json?v=2').then(d => { challenges = d; renderToday(); });
-get('data/questions.json?v=2').then(d => { questions = d; renderQcats(); });
-get('data/places.json?v=2').then(d => {
-  places = d;
-  const opts = (sel, vals) => vals.forEach(v => $(sel).insertAdjacentHTML('beforeend', `<option>${esc(v)}</option>`));
-  opts('#f-city', [...new Set(d.map(p => p.city))]); opts('#f-cat', [...new Set(d.map(p => p.category))]);
-  renderPlaces();
-});
+buildKb();
+fetch('data/words.json?v=3').then(r => r.json()).then(d => { words = d; newGame('daily'); if (!load('seenHelp', 0)) $('#b-help').click(); })
+  .catch(() => { $('#msg').textContent = 'Không tải được dữ liệu từ.'; });
