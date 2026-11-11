@@ -1,21 +1,15 @@
-# Ngày gia đình đi chơi
+# Gia đình kết nối
 
-Web tĩnh gợi ý địa điểm đi chơi cho gia đình, chạy bằng GitHub Pages. Không cần server hay cài đặt.
+Web tĩnh (GitHub Pages) giúp cả nhà rời màn hình, gần nhau hơn mỗi ngày:
+- **Hôm nay:** một thử thách gia đình mỗi ngày, chuỗi ngày liên tiếp, thống kê 7 ngày.
+- **Không điện thoại:** hẹn giờ 15/30/60 phút bên nhau.
+- **Thẻ trò chuyện:** câu hỏi cho cả nhà, con cái, vợ chồng, ông bà.
+- **Đi chơi:** gợi ý địa điểm theo thành phố, độ tuổi, ngân sách.
 
-## Thêm địa điểm
-Sửa `data/places.json`, thêm một đối tượng mới:
+Dữ liệu người dùng chỉ lưu trong trình duyệt (localStorage), không có server, không thu thập thông tin cá nhân.
 
-```json
-{"id":"ten-khong-dau","name":"Tên địa điểm","city":"Hà Nội","area":"Quận","category":"Công viên",
- "setting":"Ngoài trời","ages":["toddler","kids","teen","senior"],"budget":1,
- "duration":"Nửa ngày","desc":"Mô tả ngắn","tip":"Mẹo nhỏ"}
-```
-- `setting`: `Trong nhà` hoặc `Ngoài trời`; `budget`: 1 (tiết kiệm) đến 3 (thoải mái).
-- `ages`: `toddler`, `kids`, `teen`, `senior`.
+## Chỉnh nội dung
+Sửa các file trong `data/`: `challenges.json` (thử thách), `questions.json` (câu hỏi), `places.json` (địa điểm).
 
-## Chạy thử trên máy
+## Chạy thử
 `python3 -m http.server 8000` rồi mở http://localhost:8000
-
-## Bật GitHub Pages
-Repo → Settings → Pages → Source: `Deploy from a branch`, Branch: `main` / `(root)` → Save.
-Link: `https://<tên-github>.github.io/<tên-repo>/`
