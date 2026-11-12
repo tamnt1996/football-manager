@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: ho-tay-online
-    runtime: docker
-    plan: free
-    healthCheckPath: /health

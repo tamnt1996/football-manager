@@ -1,4 +1,5 @@
-import { WORLD, inWater, clampPos, NAME_RE, COLORS, HATS } from './shared.js';
+import { WORLD, inWater, clampPos, evaluate, NAME_RE, COLORS, HATS } from './shared.js';
+import { createNet } from './net.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -37,48 +38,69 @@ $('#l-colors').onclick = e => { const b = e.target.closest('[data-c]'); if (b) {
 $('#l-hats').onclick = e => { const b = e.target.closest('[data-a]'); if (b) { look.a = +b.dataset.a; buildPickers(); } };
 $('#l-name').value = profile.name; buildPickers();
 
-/* ================= Mạng ================= */
-let ws = null, me = null, joined = false, wantName = '';
-const others = new Map(); // id -> {id,name,look,x,y,tx,ty,bubble}
-const wsUrl = () => window.SERVER_URL || `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`;
-function connect() {
-  $('#l-err').textContent = ''; $('#l-go').disabled = true;
-  try { ws = new WebSocket(wsUrl()); } catch { return fail('Không kết nối được máy chủ'); }
-  const mine = ws;
-  ws.onopen = () => mine.send(JSON.stringify({ t: 'join', name: wantName, token: profile.name.toLowerCase() === wantName.toLowerCase() ? profile.token : '', look }));
-  ws.onmessage = e => { try { onMsg(JSON.parse(e.data)); } catch (err) { console.error(err); } };
-  ws.onclose = () => { if (ws !== mine) return; if (joined) { $('#conn').textContent = '⚠ Mất kết nối, đang thử lại…'; setTimeout(() => { if (ws === mine) connect(); }, 2000); } else fail('Không kết nối được máy chủ. Hãy thử lại sau.'); };
+/* ================= Mạng P2P ================= */
+let net = null, me = null, joined = false, words = [];
+const others = new Map(); // peerId -> {id,name,shown,look,x,y,tx,ty,bubble}
+const ROOM = (() => { const p = new URLSearchParams(location.search).get('phong') || ''; return /^[a-zA-Z0-9-]{3,24}$/.test(p) ? p.toLowerCase() : 'cong-dong'; })();
+const send = (m, to) => { if (net) net.send(m, to); };
+const cleanLook = l => ({ c: Number.isInteger(l?.c) && l.c >= 0 && l.c < COLORS.length ? l.c : 0, a: Number.isInteger(l?.a) && l.a >= 0 && l.a < HATS.length ? l.a : 0 });
+const hi = () => ({ t: 'hi', name: me.name, look: me.look, x: Math.round(me.x), y: Math.round(me.y) });
+function recomputeNames() {
+  const all = [me, ...others.values()].filter(Boolean), cnt = {};
+  all.forEach(p => { const k = p.name.toLowerCase(); cnt[k] = (cnt[k] || 0) + 1; });
+  all.forEach(p => { p.shown = cnt[p.name.toLowerCase()] > 1 ? `${p.name}·${p.id.slice(0, 3)}` : p.name; });
 }
-function fail(msg) { $('#l-err').textContent = msg; $('#l-go').disabled = false; }
-const send = o => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); };
-$('#l-go').onclick = () => {
+function setConn() {
+  const n = others.size + 1;
+  $('#conn').textContent = net.kind === 'local' ? `⚠ Chỉ chơi giữa các tab trên máy này (không tải được P2P) · ${n} người` : `🟢 Phòng "${ROOM}" · ${n} người`;
+}
+
+$('#l-go').onclick = async () => {
   const name = $('#l-name').value.trim().replace(/\s+/g, ' ');
   if (!NAME_RE.test(name)) return fail('Tên 3–16 ký tự, chỉ gồm chữ, số, khoảng trắng hoặc _');
-  wantName = name; connect();
+  $('#l-go').disabled = true; $('#l-err').textContent = 'Đang kết nối…';
+  try { net = await createNet('ht-' + ROOM); } catch (e) { return fail('Không kết nối được: ' + e.message); }
+  fetch('data/words.json?v=4').then(r => r.json()).then(d => { words = d; }).catch(() => {});
+  const [x, y] = [800 + Math.round(Math.random() * 200 - 100), 900];
+  me = { id: net.selfId, name, look: { ...look }, x, y, tx: x, ty: y, target: null, bubble: null };
+  Object.assign(profile, { name, look: me.look }); save('ht-profile', profile);
+  net.on('join', id => send(hi(), id));
+  net.on('leave', onLeave);
+  net.on('msg', onMsg);
+  joined = true; $('#login').hidden = true; $('#hud').hidden = false; $('#l-go').disabled = false;
+  recomputeNames(); renderList(); setConn();
+  log('', `Chào mừng ${me.name}! Bấm vào bản đồ để đi, bấm vào người khác để làm quen. Gửi link này cho bạn bè để cùng vào phòng.`);
+  setTimeout(() => { if (!others.size) log('', 'Chưa thấy ai khác. Hãy gửi link cho bạn bè (nút "🔗 Mời bạn bè") rồi chờ vài giây nhé.'); }, 6000);
 };
+function fail(msg) { $('#l-err').textContent = msg; $('#l-go').disabled = false; }
 $('#l-name').onkeydown = e => { if (e.key === 'Enter') $('#l-go').click(); };
 
-function addOther(p) { others.set(p.id, { ...p, tx: p.x, ty: p.y, bubble: null }); }
-function onMsg(m) {
+function onLeave(id) {
+  const o = others.get(id); if (!o) return;
+  others.delete(id); recomputeNames(); renderList(); setConn(); log('', `${o.shown} đã rời hồ`);
+  if (cardId === id) closeCard();
+  if (duel && duel.peer === id && !duel.over) duelEnd(true, 'Đối thủ đã rời ván, bạn thắng!');
+}
+function onMsg(m, id) {
+  if (!m || typeof m !== 'object') return;
+  if (m.t === 'hi') {
+    const name = String(m.name || '').trim().replace(/\s+/g, ' ');
+    if (!NAME_RE.test(name)) return;
+    const [x, y] = clampPos(+m.x || 800, +m.y || 900), fresh = !others.has(id);
+    const o = { id, name, look: cleanLook(m.look), x, y, tx: x, ty: y, bubble: null }; if (!fresh) Object.assign(o, { x: others.get(id).x, y: others.get(id).y });
+    others.set(id, o); recomputeNames(); renderList(); setConn(); if (fresh) log('', `${o.shown} vừa đến hồ`); return;
+  }
+  const o = others.get(id); if (!o) return;
   switch (m.t) {
-    case 'error': if (!joined) { fail(m.msg); ws.close(); } else toast(m.msg); break;
-    case 'welcome':
-      me = { ...m.you, tx: m.you.x, ty: m.you.y, target: null, bubble: null };
-      others.clear(); m.players.filter(p => p.id !== me.id).forEach(addOther);
-      Object.assign(profile, { name: me.name, token: m.token, look: me.look }); save('ht-profile', profile);
-      if (!joined) { joined = true; $('#login').hidden = true; $('#hud').hidden = false; log('', `Chào mừng ${me.name} đến Hồ Tây! Bấm vào bản đồ để đi, bấm vào người khác để làm quen.`); }
-      $('#conn').textContent = `🟢 ${me.name}`; renderList(); break;
-    case 'join': addOther(m.p); renderList(); log('', `${m.p.name} vừa đến hồ`); break;
-    case 'leave': { const o = others.get(m.id); if (o) { log('', `${o.name} đã rời hồ`); others.delete(m.id); renderList(); if (cardId === m.id) closeCard(); } break; }
-    case 's': for (const [id, x, y] of m.p) { const o = others.get(id); if (o) { o.tx = x; o.ty = y; } } break;
-    case 'chat': { const p = m.id === me.id ? me : others.get(m.id); if (p) { p.bubble = { text: m.text, until: performance.now() + 6000 }; log(p.name, m.text); } break; }
-    case 'emote': { const p = m.id === me.id ? me : others.get(m.id); if (p) p.bubble = { text: m.e, until: performance.now() + 2500, emoji: true }; break; }
-    case 'notice': toast(m.msg); break;
-    case 'invite': showInvite(m); break;
-    case 'gstart': startDuel(m); break;
-    case 'gres': duelResult(m); break;
-    case 'gopp': duelOpp(m); break;
-    case 'gend': duelEnd(m); break;
+    case 'p': { const [x, y] = clampPos(+m.x || 0, +m.y || 0); if (!inWater(x, y)) { o.tx = x; o.ty = y; } break; }
+    case 'c': { const text = String(m.text || '').slice(0, 120); if (text) { o.bubble = { text, until: performance.now() + 6000 }; log(o.shown, text); } break; }
+    case 'e': if (['👋', '😂', '❤️', '👍', '🎉'].includes(m.e)) o.bubble = { text: m.e, until: performance.now() + 2500, emoji: true }; break;
+    case 'inv': if (duel) { send({ t: 'rep', accept: false, busy: true }, id); } else showInvite(o); break;
+    case 'rep': if (outInvite === id) { outInvite = null; if (m.accept) { /* chờ gs từ người mời */ startDuelAsHost(o); } else toast(m.busy ? `${o.shown} đang bận` : `${o.shown} chưa muốn chơi lúc này`); } break;
+    case 'gs': if (acceptedFrom === id && !duel) { acceptedFrom = null; const w = words[+m.wi]; if (w) startDuel(o, w); } break;
+    case 'gc': if (duel && duel.peer === id && Array.isArray(m.colors) && m.colors.length === duel.len) { duel.oppRows.push(m.colors.map(c => (['ok', 'mid', 'no'].includes(c) ? c : 'no'))); renderDuel(); } break;
+    case 'gd': if (duel && duel.peer === id && !duel.over) { if (m.solved) duelEnd(false, `${o.shown} đoán đúng trước.`); else { duel.oppDone = true; if (duel.myDone) duelEnd(null, 'Cả hai đều hết lượt.'); } } break;
+    case 'gl': if (duel && duel.peer === id && !duel.over) duelEnd(true, 'Đối thủ đã rời ván, bạn thắng!'); break;
   }
 }
 
@@ -93,26 +115,32 @@ function log(name, text) {
 function renderList() {
   const all = [me, ...others.values()].filter(Boolean);
   $('#n-online').textContent = all.length;
-  $('#plist').innerHTML = all.map(p => `<div data-id="${p.id}">${p.id === me.id ? '⭐ ' : '• '}${esc(p.name)}</div>`).join('');
+  $('#plist').innerHTML = all.map(p => `<div data-id="${esc(p.id)}">${p.id === me.id ? '⭐ ' : '• '}${esc(p.shown || p.name)}</div>`).join('');
 }
-$('#plist').onclick = e => { const d = e.target.closest('[data-id]'); if (d && +d.dataset.id !== me.id) openCard(+d.dataset.id); };
-$('#chatform').onsubmit = e => { e.preventDefault(); const t = $('#chat').value.trim(); if (t) send({ t: 'chat', text: t }); $('#chat').value = ''; $('#chat').blur(); };
-$('#emotes').onclick = e => { const b = e.target.closest('button'); if (b) send({ t: 'emote', e: b.textContent }); };
+$('#plist').onclick = e => { const d = e.target.closest('[data-id]'); if (d && d.dataset.id !== me.id) openCard(d.dataset.id); };
+$('#chatform').onsubmit = e => { e.preventDefault(); const t = $('#chat').value.trim(); if (t) { me.bubble = { text: t, until: performance.now() + 6000 }; log(me.shown || me.name, t); send({ t: 'c', text: t }); } $('#chat').value = ''; $('#chat').blur(); };
+$('#emotes').onclick = e => { const b = e.target.closest('button'); if (b) { me.bubble = { text: b.textContent, until: performance.now() + 2500, emoji: true }; send({ t: 'e', e: b.textContent }); } };
+$('#b-share').onclick = async () => {
+  const url = location.origin + location.pathname + (ROOM === 'cong-dong' ? '' : '?phong=' + ROOM);
+  try { if (navigator.share) return await navigator.share({ title: 'Hồ Tây Online', text: 'Vào Hồ Tây chơi cùng mình nhé!', url }); } catch (e) { if (e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(url); toast('Đã chép link, hãy gửi cho bạn bè'); } catch { toast(url); }
+};
+$('#b-room').onclick = () => { const code = Math.random().toString(36).slice(2, 8); location.href = location.pathname + '?phong=' + code; };
 
 let cardId = null;
 function openCard(id) {
   const p = others.get(id); if (!p) return; cardId = id;
   const c = $('#card'); c.hidden = false;
-  c.innerHTML = `<b>${esc(p.name)}</b><button class="primary" id="c-play">🔤 Mời chơi Đoán Từ</button><button id="c-close">Đóng</button>`;
-  $('#c-play').onclick = () => { send({ t: 'invite', to: id }); closeCard(); };
+  c.innerHTML = `<b>${esc(p.shown)}</b><button class="primary" id="c-play">🔤 Mời chơi Đoán Từ</button><button id="c-close">Đóng</button>`;
+  $('#c-play').onclick = () => { closeCard(); if (duel) return toast('Bạn đang trong ván chơi'); if (!words.length) return toast('Đang tải kho từ, thử lại sau giây lát'); outInvite = id; send({ t: 'inv' }, id); toast(`Đã gửi lời mời cho ${p.shown}`); setTimeout(() => { if (outInvite === id) { outInvite = null; } }, 30000); };
   $('#c-close').onclick = closeCard;
 }
 function closeCard() { cardId = null; $('#card').hidden = true; }
-let inviteTimer = null;
-function showInvite(m) {
+let inviteTimer = null, outInvite = null, acceptedFrom = null;
+function showInvite(o) {
   const box = $('#invite'); box.hidden = false;
-  box.innerHTML = `<div><b>${esc(m.name)}</b> mời bạn chơi <b>Đoán Từ</b>!</div><div><button class="primary" id="i-yes">Chấp nhận</button> <button id="i-no">Từ chối</button></div>`;
-  const done = acc => { clearTimeout(inviteTimer); box.hidden = true; send({ t: 'reply', to: m.from, accept: acc }); };
+  box.innerHTML = `<div><b>${esc(o.shown)}</b> mời bạn chơi <b>Đoán Từ</b>!</div><div><button class="primary" id="i-yes">Chấp nhận</button> <button id="i-no">Từ chối</button></div>`;
+  const done = acc => { clearTimeout(inviteTimer); box.hidden = true; if (acc && (duel || !words.length)) { send({ t: 'rep', accept: false, busy: true }, o.id); return; } if (acc) acceptedFrom = o.id; send({ t: 'rep', accept: acc }, o.id); };
   $('#i-yes').onclick = () => done(true); $('#i-no').onclick = () => done(false);
   clearTimeout(inviteTimer); inviteTimer = setTimeout(() => { box.hidden = true; }, 30000);
 }
@@ -120,14 +148,19 @@ function showInvite(m) {
 /* ================= Đấu Đoán Từ ================= */
 const KEYROWS = ['qwertyuiop', 'asdfghjkl', '+zxcvbnm-'];
 let duel = null;
-function startDuel(m) {
+function startDuelAsHost(o) {
+  if (duel || !words.length) return;
+  const wi = Math.floor(Math.random() * words.length);
+  send({ t: 'gs', wi }, o.id); startDuel(o, words[wi]);
+}
+function startDuel(o, w) {
   $('#invite').hidden = true; closeCard();
-  duel = { len: m.len, max: m.max, mine: [], cur: '', over: false, opp: m.opp, oppRows: [] };
-  $('#duel').hidden = false; $('#d-title').textContent = `Đoán Từ: bạn vs ${m.opp.name}`;
-  $('#d-hint').textContent = `Gợi ý: ${m.hint} (${m.len} chữ cái, không dấu). Ai đoán đúng trước sẽ thắng!`;
-  $('#d-me').textContent = 'Bạn'; $('#d-opp').textContent = m.opp.name; $('#d-msg').textContent = ''; $('#d-leave').textContent = 'Rời ván';
-  const rows = '<div class="drow" style="grid-template-columns:repeat(' + m.len + ',auto)">' + '<div class="tile"></div>'.repeat(m.len) + '</div>';
-  $('#d-board').innerHTML = rows.repeat(m.max); $('#d-oppboard').innerHTML = rows.repeat(m.max);
+  duel = { peer: o.id, name: o.shown, word: w, len: w.k.length, max: 6, mine: [], cur: '', over: false, oppRows: [], myDone: false, oppDone: false };
+  $('#duel').hidden = false; $('#d-title').textContent = `Đoán Từ: bạn vs ${o.shown}`;
+  $('#d-hint').textContent = `Gợi ý: ${w.h} (${w.k.length} chữ cái, không dấu). Ai đoán đúng trước sẽ thắng!`;
+  $('#d-me').textContent = 'Bạn'; $('#d-opp').textContent = o.shown; $('#d-msg').textContent = ''; $('#d-leave').textContent = 'Rời ván';
+  const rows = '<div class="drow" style="grid-template-columns:repeat(' + duel.len + ',auto)">' + '<div class="tile"></div>'.repeat(duel.len) + '</div>';
+  $('#d-board').innerHTML = rows.repeat(duel.max); $('#d-oppboard').innerHTML = rows.repeat(duel.max);
   $('#d-kb').innerHTML = KEYROWS.map(r => `<div class="krow">${[...r].map(c => c === '+' ? '<button class="key wide" data-k="Enter">Enter</button>' : c === '-' ? '<button class="key wide" data-k="Back">⌫</button>' : `<button class="key" data-k="${c}">${c}</button>`).join('')}</div>`).join('');
   renderDuel();
 }
@@ -143,21 +176,24 @@ function renderDuel() {
   document.querySelectorAll('#d-kb .key[data-k]').forEach(k => { k.classList.remove('ok', 'mid', 'no'); if (best[k.dataset.k]) k.classList.add(best[k.dataset.k]); });
 }
 function duelKey(k) {
-  if (!duel || duel.over || $('#duel').hidden) return;
+  if (!duel || duel.over || duel.myDone || $('#duel').hidden) return;
   if (k === 'Back') duel.cur = duel.cur.slice(0, -1);
-  else if (k === 'Enter') { if (duel.cur.length !== duel.len) { $('#d-msg').textContent = `Cần đủ ${duel.len} chữ cái`; return; } $('#d-msg').textContent = ''; send({ t: 'guess', guess: duel.cur }); duel.waiting = duel.cur; duel.cur = ''; }
-  else if (/^[a-z]$/.test(k) && duel.cur.length < duel.len) duel.cur += k;
+  else if (k === 'Enter') {
+    if (duel.cur.length !== duel.len) { $('#d-msg').textContent = `Cần đủ ${duel.len} chữ cái`; return; }
+    $('#d-msg').textContent = '';
+    const guess = duel.cur, colors = evaluate(guess, duel.word.k); duel.cur = '';
+    duel.mine.push({ guess, colors }); send({ t: 'gc', colors }, duel.peer);
+    if (guess === duel.word.k) { duel.myDone = true; send({ t: 'gd', solved: true, tries: duel.mine.length }, duel.peer); duelEnd(true, 'Bạn đoán đúng trước!'); }
+    else if (duel.mine.length >= duel.max) { duel.myDone = true; send({ t: 'gd', solved: false }, duel.peer); if (duel.oppDone) duelEnd(null, 'Cả hai đều hết lượt.'); else $('#d-msg').textContent = 'Hết lượt, đợi đối thủ…'; }
+  } else if (/^[a-z]$/.test(k) && duel.cur.length < duel.len) duel.cur += k;
   renderDuel();
 }
-function duelResult(m) { if (!duel) return; duel.mine.push({ guess: m.guess, colors: m.colors }); renderDuel(); }
-function duelOpp(m) { if (!duel) return; duel.oppRows.push(m.colors); renderDuel(); }
-function duelEnd(m) {
-  if (!duel) return; duel.over = true; renderDuel();
-  const won = m.winner === me.id;
-  $('#d-msg').textContent = (m.winner == null ? '🤝 Hòa! ' : won ? (m.forfeit ? '🎉 Đối thủ đã rời ván, bạn thắng! ' : '🎉 Bạn thắng! ') : '😅 Đối thủ thắng. ') + `Từ đúng: ${m.word}`;
+function duelEnd(won, why) {
+  if (!duel || duel.over) return; duel.over = true; renderDuel();
+  $('#d-msg').textContent = (won === null ? '🤝 Hòa! ' : won ? '🎉 ' : '😅 ') + why + ` Từ đúng: ${duel.word.w}`;
   $('#d-leave').textContent = 'Đóng';
 }
-$('#d-leave').onclick = () => { if (duel && !duel.over) send({ t: 'gleave' }); duel = null; $('#duel').hidden = true; };
+$('#d-leave').onclick = () => { if (duel && !duel.over) send({ t: 'gl' }, duel.peer); duel = null; $('#duel').hidden = true; };
 $('#d-kb').onclick = e => { const b = e.target.closest('[data-k]'); if (b) duelKey(b.dataset.k); };
 
 document.addEventListener('keydown', e => {
@@ -282,7 +318,7 @@ let last = performance.now(), sendAt = 0, lastSent = '';
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now; const t = now / 1000;
   const moving = stepMe(dt);
-  if (me) { me.moving = moving; if (now - sendAt > 100) { sendAt = now; const s = Math.round(me.x) + ',' + Math.round(me.y); if (s !== lastSent) { lastSent = s; send({ t: 'm', x: Math.round(me.x), y: Math.round(me.y) }); } } }
+  if (me) { me.moving = moving; if (now - sendAt > 100) { sendAt = now; const s = Math.round(me.x) + ',' + Math.round(me.y); if (s !== lastSent) { lastSent = s; send({ t: 'p', x: Math.round(me.x), y: Math.round(me.y) }); } } }
   for (const o of others.values()) { const dx = o.tx - o.x, dy = o.ty - o.y; o.moving = Math.hypot(dx, dy) > 2; o.x += dx * Math.min(1, dt * 10); o.y += dy * Math.min(1, dt * 10); }
   render(t, now); requestAnimationFrame(frame);
 }
@@ -309,8 +345,8 @@ function render(t, now) {
   list.sort((a, b) => a.y - b.y); for (const o of list) o.draw(ctx);
   // tên + bong bóng chat
   for (const p of all) {
-    ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'; const w = ctx.measureText(p.name).width + 12, ny = p.y - (HATS[p.look.a] ? 70 : 58);
-    ctx.fillStyle = p === me ? '#ff7a45dd' : '#000a'; ctx.beginPath(); ctx.roundRect(p.x - w / 2, ny - 13, w, 18, 8); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(p.name, p.x, ny);
+    ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'; const nm = p.shown || p.name, w = ctx.measureText(nm).width + 12, ny = p.y - (HATS[p.look.a] ? 70 : 58);
+    ctx.fillStyle = p === me ? '#ff7a45dd' : '#000a'; ctx.beginPath(); ctx.roundRect(p.x - w / 2, ny - 13, w, 18, 8); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(nm, p.x, ny);
     if (p.bubble && p.bubble.until > now) bubble(ctx, p.x, ny - 22, p.bubble);
   }
   // ánh sáng theo giờ
