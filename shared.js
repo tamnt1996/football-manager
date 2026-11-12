@@ -1,6 +1,8 @@
 // Dùng chung cho cả trình duyệt và server.
-export const WORLD = { w: 4800, h: 640, y0: 445, y1: 610 };
+export const WORLD = { w: 4800, h: 640, y0: 445, y1: 585 };
+export const LAKE = { y0: 292, y1: 392 };
 export const clampPos = (x, y) => [Math.min(WORLD.w - 30, Math.max(30, x)), Math.min(WORLD.y1, Math.max(WORLD.y0, y))];
+export const clampLake = (x, y) => [Math.min(WORLD.w - 60, Math.max(60, x)), Math.min(LAKE.y1, Math.max(LAKE.y0, y))];
 export function evaluate(guess, answer) {
   const res = Array(guess.length).fill('no'), left = {};
   for (let i = 0; i < guess.length; i++) { if (guess[i] === answer[i]) res[i] = 'ok'; else left[answer[i]] = (left[answer[i]] || 0) + 1; }

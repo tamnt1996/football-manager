@@ -58,3 +58,7 @@ input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;backgroun
 #ch-cv{border-radius:10px;box-shadow:0 4px 16px #0004;touch-action:manipulation;max-width:100%}
 .center{text-align:center}
 #card button{white-space:nowrap}
+
+#act{position:absolute;left:50%;bottom:68px;transform:translateX(-50%);font-size:16px;padding:11px 20px;border-radius:999px;box-shadow:0 4px 16px #0005;white-space:nowrap;max-width:92vw}
+#act2{position:absolute;left:50%;bottom:122px;transform:translateX(-50%);border-radius:999px;box-shadow:0 4px 16px #0004}
+@media(max-width:600px){#act{bottom:112px}#act2{bottom:164px}}

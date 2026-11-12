@@ -1,5 +1,5 @@
 // Giao diện bàn cờ tướng / cờ úp (vẽ bằng canvas), nối với mạng qua send().
-import { createGame, movesFrom, isLegal, play, isCheck, GLYPH } from './xiangqi.js?v=5';
+import { createGame, movesFrom, isLegal, play, isCheck, GLYPH } from './xiangqi.js?v=8';
 
 const $ = s => document.querySelector(s);
 

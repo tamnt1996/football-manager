@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Hồ Tây Online</title>
 <meta name="description" content="Dạo Hồ Tây trực tuyến: tạo nhân vật, gặp bạn bè, trò chuyện và rủ nhau chơi Đoán Từ.">
-<link rel="stylesheet" href="world.css?v=5">
+<link rel="stylesheet" href="world.css?v=8">
 </head>
 <body>
 <canvas id="cv"></canvas>
@@ -32,6 +32,8 @@
   <form id="chatform"><input id="chat" maxlength="120" placeholder="Nhắn gì đó… (Enter để gửi)" autocomplete="off"><button class="primary">Gửi</button></form>
   <div id="emotes"><button>👋</button><button>😂</button><button>❤️</button><button>👍</button><button>🎉</button></div>
   <div id="conn" class="box small"></div>
+  <button id="act" class="primary" hidden></button>
+  <button id="act2" hidden>📣 Bóp còi (H)</button>
   <div id="menu"><button id="b-share" class="btn">🔗 Mời bạn bè</button> <button id="b-room" class="btn">🔒 Phòng riêng</button> <a href="doantu.html" class="btn">🔤 Đoán Từ hằng ngày</a></div>
 </div>
 
@@ -57,6 +59,6 @@
     <div id="ch-msg" class="muted small center"></div>
   </div>
 </div>
-<script type="module" src="world.js?v=6"></script>
+<script type="module" src="world.js?v=8"></script>
 </body>
 </html>

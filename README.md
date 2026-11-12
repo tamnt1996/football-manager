@@ -13,6 +13,16 @@ Có thêm **Đoán Từ hằng ngày** chơi một mình (`doantu.html`).
 ## Chạy thử trên máy
 `python3 -m http.server 8000` rồi mở http://localhost:8000 (cần chạy qua http, không mở file trực tiếp).
 
+## Tương tác trong khung cảnh
+Đến gần (hoặc bấm vào) các vật thể, nút hiện ra ở giữa dưới màn hình (hoặc bấm phím **E**):
+- 🍵 **Trà đá vỉa hè**, ☕ **Cà phê trứng**, 🪑 **Ghế đá**: ngồi xuống, có ly trên tay, bà bán hàng đáp lời.
+- 🍤 **Bánh tôm Hồ Tây**, 🍉 **Trái cây**: mua và ăn.
+- 🏍 **Xe máy**: lên xe và lái nhanh dọc bờ hồ (phím **H** bóp còi); mỗi xe chỉ một người dùng.
+- 🦢 **Thuyền vịt**: thuê và chèo ra giữa hồ (một thuyền cho thuê, trả lại về bến).
+- 🎣 **Câu cá**, 📸 **Chụp ảnh check-in**, 🙏 **Thắp nhang ở Phủ Tây Hồ**.
+- Người đi đường (nón lá, gánh hàng rong, xe đạp) và xe cộ trên đường chạy theo đồng hồ chung nên mọi người thấy gần giống nhau.
+- Trạng thái ngồi/lái/chèo của bạn được đồng bộ để người khác nhìn thấy.
+
 ## Cờ úp
 Tất cả quân (trừ hai tướng) bị úp và xáo trộn trong mỗi bên. Quân úp đi theo vai trò của ô nó đang đứng; đi xong thì lật ra và từ đó đi theo đúng quân thật.
 `xiangqi.js` là bộ luật dùng chung (đã kiểm tra bằng perft: 44 / 1920 / 79666 nước ở độ sâu 1–3).
