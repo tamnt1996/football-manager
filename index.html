@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Hồ Tây Online</title>
 <meta name="description" content="Dạo Hồ Tây trực tuyến: tạo nhân vật, gặp bạn bè, trò chuyện và rủ nhau chơi Đoán Từ.">
-<link rel="stylesheet" href="world.css?v=4">
+<link rel="stylesheet" href="world.css?v=5">
 </head>
 <body>
 <canvas id="cv"></canvas>
@@ -13,7 +13,7 @@
 <div id="login" class="overlay">
   <div class="panel">
     <h1>🌅 Hồ Tây Online</h1>
-    <p class="muted">Tạo nhân vật, dạo quanh hồ, gặp người khác và rủ nhau chơi Đoán Từ.</p>
+    <p class="muted">Tạo nhân vật, dạo bên bờ Hồ Tây, gặp người khác và rủ nhau chơi Đoán Từ, Cờ tướng, Cờ úp.</p>
     <label>Tên của bạn<input id="l-name" maxlength="16" placeholder="Ví dụ: Lan Anh" autocomplete="off"></label>
     <div class="row"><canvas id="preview" width="96" height="110"></canvas>
       <div>
@@ -49,6 +49,14 @@
     <div id="d-kb" class="kb"></div>
   </div>
 </div>
-<script type="module" src="world.js?v=4"></script>
+<div id="chess" class="overlay" hidden>
+  <div class="panel wide chesspanel">
+    <div class="duelhead"><b id="ch-title">Cờ tướng</b><button id="ch-leave">Đầu hàng</button></div>
+    <div id="ch-status" class="msg"></div>
+    <canvas id="ch-cv"></canvas>
+    <div id="ch-msg" class="muted small center"></div>
+  </div>
+</div>
+<script type="module" src="world.js?v=6"></script>
 </body>
 </html>

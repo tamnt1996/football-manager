@@ -52,3 +52,9 @@ input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;backgroun
 .key{flex:1;max-width:42px;height:44px;padding:0;border:0;background:var(--key);border-radius:7px;font-weight:700;text-transform:uppercase}
 .key.wide{max-width:64px;font-size:12px}.key.ok{background:var(--ok);color:#fff}.key.mid{background:var(--mid);color:#fff}.key.no{background:var(--no);color:#fff}
 @media(max-width:600px){#online{max-width:120px;font-size:13px}#menu{top:auto;bottom:62px;right:10px}#emotes{bottom:62px}}
+
+.chesspanel{align-items:center}
+.chesspanel .duelhead{width:100%}
+#ch-cv{border-radius:10px;box-shadow:0 4px 16px #0004;touch-action:manipulation;max-width:100%}
+.center{text-align:center}
+#card button{white-space:nowrap}
